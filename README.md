@@ -66,3 +66,15 @@ Con la misma cookie de administrador, usá el `id` que devolvió el alta:
 - `DELETE /api/games/:id`: devuelve `204` sin cuerpo. Si volvés a consultar ese juego, devuelve `404`.
 
 Ambas rutas devuelven `401` sin sesión, `403` con rol `user`, `400` si el ID está mal formado y `404` si el juego no existe.
+
+## Abrir el catálogo web
+
+Con el backend en el puerto 3000, abrí otra terminal desde la raíz:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Abrí la URL que indica Vite (normalmente `http://localhost:5173`). Seleccioná el título de un juego para abrir su ficha en `/juegos/:id`. El servidor de desarrollo reenvía las consultas `/api` al backend.
