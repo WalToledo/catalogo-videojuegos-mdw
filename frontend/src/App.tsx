@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Account } from './Account'
 
 type Game = { id: string; title: string; platform: string; releaseDate: string; maxPlayers: number }
 type View = { list: Game[] } | { game: Game } | { message: string }
@@ -33,6 +34,7 @@ export default function App() {
   }, [id, path])
 
   return <main>
+    <Account />
     {path !== '/' && <a href="/">← Volver al catálogo</a>}
     <h1>{'game' in view ? view.game.title : 'Catálogo de videojuegos'}</h1>
     {'message' in view && <p role="status">{view.message}</p>}

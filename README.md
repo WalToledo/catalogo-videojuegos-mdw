@@ -78,3 +78,13 @@ npm run dev
 ```
 
 Abrí la URL que indica Vite (normalmente `http://localhost:5173`). Seleccioná el título de un juego para abrir su ficha en `/juegos/:id`. El servidor de desarrollo reenvía las consultas `/api` al backend.
+
+Desde **Crear cuenta** podés registrarte con nombre, email y contraseña. Si ya tenés cuenta, usá **Iniciar sesión**. Con la sesión activa se muestra tu email, incluso después de recargar; **Cerrar sesión** te devuelve al catálogo público. En desarrollo, si abrís Vite en otro origen, configurá `FRONTEND_ORIGIN` en `backend/.env` con esa URL exacta y reiniciá el backend.
+
+### Iniciar sesión con GitHub en local
+
+1. En [GitHub → Developer settings → OAuth Apps](https://github.com/settings/developers), elegí **New OAuth App**. Usá `http://localhost:5173` como **Homepage URL** y `http://localhost:3000/api/auth/callback/github` como **Authorization callback URL**.
+2. En `backend/.env`, completá `GITHUB_CLIENT_ID` con el **Client ID** y `GITHUB_CLIENT_SECRET` con el secreto que generes. Reiniciá el backend. Sin esas variables el acceso por email sigue funcionando.
+3. Abrí `http://localhost:5173`, elegí **Continuar con GitHub** y autorizá la app. Al volver al catálogo debería aparecer tu email y seguir visible al recargar.
+
+Si usás otros puertos, ajustá también `FRONTEND_ORIGIN`, `BETTER_AUTH_URL` y las URLs registradas en GitHub. Usá `localhost` tanto para el frontend como para el callback para compartir la cookie de sesión.
