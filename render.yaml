@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: catalogo-mdw-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.18.0
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # URL pública del sitio estático, sin /api ni barra final.
+      - key: BETTER_AUTH_URL
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+
+  - type: web
+    name: catalogo-mdw-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci --include=dev && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: 24.18.0
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://catalogo-mdw-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { createAuthClient } from 'better-auth/react'
+import { auth } from './auth'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-const auth = createAuthClient({ baseURL: window.location.origin })
 const credentials = z.object({
   email: z.email('Ingresá un email válido.'),
   password: z.string().min(1, 'Ingresá tu contraseña.'),
@@ -79,6 +78,7 @@ export function Account() {
       <span>No pudimos consultar tu sesión.</span> <button onClick={() => void refetch()}>Reintentar</button>
     </> : data ? <>
       <span>Sesión de {data.user.email}</span> <button onClick={logout} disabled={closing}>Cerrar sesión</button>
+      {data.user.role === 'admin' && window.location.pathname !== '/admin' && <a href="/admin">Administrar catálogo</a>}
       {failed && <p role="alert">No se pudo cerrar la sesión.</p>}
     </> : <>
       <button aria-expanded={mode === 'login'} onClick={() => setMode(mode === 'login' ? null : 'login')}>Iniciar sesión</button>

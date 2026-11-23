@@ -46,7 +46,7 @@ Better Auth guarda las cuentas y sesiones en la misma base MongoDB. Usá estas r
 | GET | `/api/auth/get-session` | Enviá la cookie para consultar la sesión. Sin sesión devuelve `null`. |
 | POST | `/api/auth/sign-out` | Enviá la cookie y un cuerpo `{}` para cerrar la sesión. |
 
-Si cambiás el puerto o dominio, actualizá `BETTER_AUTH_URL` con la URL pública del backend.
+`BETTER_AUTH_URL` es el origen público por el que se accede a Better Auth. En local usamos el backend; en Render usamos el dominio del frontend, que reenvía `/api/*` al backend.
 
 ## Alta de juegos
 
@@ -88,3 +88,32 @@ Desde **Crear cuenta** podés registrarte con nombre, email y contraseña. Si ya
 3. Abrí `http://localhost:5173`, elegí **Continuar con GitHub** y autorizá la app. Al volver al catálogo debería aparecer tu email y seguir visible al recargar.
 
 Si usás otros puertos, ajustá también `FRONTEND_ORIGIN`, `BETTER_AUTH_URL` y las URLs registradas en GitHub. Usá `localhost` tanto para el frontend como para el callback para compartir la cookie de sesión.
+
+### Administrar el catálogo
+
+Con una sesión `admin`, elegí **Administrar catálogo** o abrí `http://localhost:5173/admin`. Desde ahí podés crear un juego, editar su ficha o eliminarlo. Las cuentas nuevas tienen rol `user`: pueden consultar el catálogo, pero no modificarlo.
+
+Para probar con una cuenta administradora en tu base local, registrá una cuenta de prueba y ejecutá en `mongosh`, sobre la base del catálogo, reemplazando el email por el de esa cuenta:
+
+```js
+db.user.updateOne({ email: "admin-de-prueba@example.com" }, { $set: { role: "admin" } })
+```
+
+Verificá que `matchedCount` sea `1` y volvé a iniciar sesión con esa cuenta.
+
+## Desplegar en Render (etapa 10)
+
+El `render.yaml` de la raíz define dos servicios: `catalogo-mdw-api` (Express) y `catalogo-mdw-web` (sitio estático Vite). **Las URLs de abajo son ejemplos basados en esos nombres**. Usá los dominios asignados por Render, incluidos sus posibles sufijos.
+
+1. **Prepará MongoDB.** En MongoDB Atlas, creá un cluster y un usuario de base con lectura/escritura en `catalogo`. Copiá la URI del driver incluyendo `/catalogo` antes del `?`. En *Network Access*, habilitá las IP de salida del Web Service, disponibles en Render → servicio → **Connect → Outbound**. El contenedor local no es accesible desde Render; sus juegos y cuentas no se copian.
+2. **Publicá la rama con el Blueprint y el panel.** En Render, elegí **New → Blueprint**, conectá este repositorio y seleccioná la rama publicada que contiene `render.yaml` (normalmente `main` después del merge).
+3. **Configurá las variables del backend.** `MONGODB_URI` es la URI de Atlas; `BETTER_AUTH_SECRET` lo genera Render. Poné en `BETTER_AUTH_URL` la URL HTTPS del **frontend**, sin `/api` (ejemplo: `https://catalogo-mdw-web.onrender.com`). Render asigna el puerto, no cargues el `.env` local. El cliente usa rutas relativas y no necesita secretos ni una variable para la URL de la API.
+4. **Conectá GitHub OAuth.** Creá una OAuth App de producción para conservar la local. Usá la URL HTTPS del **frontend** como *Homepage URL* y esa misma URL más `/api/auth/callback/github` como *Redirect URI*. Cargá `GITHUB_CLIENT_ID` y `GITHUB_CLIENT_SECRET` en el **backend**, no en Vite. Si el dominio definitivo cambia, corregí GitHub y `BETTER_AUTH_URL` y volvé a desplegar.
+5. **Verificá los dominios y los rewrites.** El primer rewrite del Static Site envía `/api/*` a `https://<backend-real>/api/*`; el segundo envía `/*` a `/index.html`. Si el dominio del backend no coincide con el de `render.yaml`, corregí `destination` con el dominio asignado, publicá el cambio y sincronizá el Blueprint. Un redirect no reemplaza el rewrite: el navegador debe seguir en el dominio del frontend.
+
+### Prueba de aceptación en producción
+
+- Abrí `/api/health` desde **ambos** dominios: deben devolver `{"status":"ok"}`. En el frontend, `/api/games` debe devolver JSON, no el HTML del catálogo.
+- Si la base está vacía, registrá una cuenta en producción, asignale `admin` en la base de Atlas y volvé a ingresar. Creá una ficha desde `/admin`. Abrila desde el listado público y presioná **F5**: debe seguir mostrándose.
+- Cerrá sesión e ingresá con **Continuar con GitHub** desde el frontend. Tras el callback, verificá que aparece tu email y que sigue visible al recargar. En **Red/Network** del navegador, las llamadas del catálogo y de sesión deben usar `/api/...` en el dominio del **frontend**.
+- Si el backend no arranca, revisá los logs, el usuario de Atlas y los permisos de red. Si una ficha da 404 solo al recargar, revisá el rewrite a `/index.html`. Si GitHub rechaza el callback, compará su URI con `BETTER_AUTH_URL` + `/api/auth/callback/github`.

@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Account } from './Account'
+import { Admin, type Game } from './Admin'
 
-type Game = { id: string; title: string; platform: string; releaseDate: string; maxPlayers: number }
 type View = { list: Game[] } | { game: Game } | { message: string }
 
 export default function App() {
+  if (/^\/admin\/?$/.test(window.location.pathname)) {
+    return <main><Account /><a href="/">← Volver al catálogo</a><h1>Administrar catálogo</h1><Admin /></main>
+  }
+  return <Catalog />
+}
+
+function Catalog() {
   const [view, setView] = useState<View>({ message: 'Cargando catálogo…' })
   const path = window.location.pathname
   const id = /^\/juegos\/([a-f\d]{24})\/?$/i.exec(path)?.[1]
