@@ -47,3 +47,13 @@ Better Auth guarda las cuentas y sesiones en la misma base MongoDB. Usá estas r
 | POST | `/api/auth/sign-out` | Enviá la cookie y un cuerpo `{}` para cerrar la sesión. |
 
 Si cambiás el puerto o dominio, actualizá `BETTER_AUTH_URL` con la URL pública del backend.
+
+## Alta de juegos
+
+`POST /api/games` requiere la cookie de una sesión con rol `admin`. Enviá los cuatro campos como JSON:
+
+```json
+{"title":"Portal 2","platform":"PC","releaseDate":"2011-04-19","maxPlayers":2}
+```
+
+El alta devuelve `201` con la ficha y su `id`. Sin sesión devuelve `401`; con rol `user`, `403`. Si la ficha es inválida, devuelve `400`: por ejemplo, con `maxPlayers: 0` el detalle está en `errors.fieldErrors.maxPlayers`.
