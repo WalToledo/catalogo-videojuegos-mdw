@@ -10,7 +10,7 @@ const mongo = new MongoClient(process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27
 const auth = createAuth(mongo.db());
 await mongo.connect();
 app.all("/api/auth/{*path}", toNodeHandler(auth));
-app.use("/api/games", gamesRouter(mongo.db()));
+app.use("/api/games", gamesRouter(mongo.db(), auth));
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
