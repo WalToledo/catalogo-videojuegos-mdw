@@ -57,3 +57,12 @@ Si cambiás el puerto o dominio, actualizá `BETTER_AUTH_URL` con la URL públic
 ```
 
 El alta devuelve `201` con la ficha y su `id`. Sin sesión devuelve `401`; con rol `user`, `403`. Si la ficha es inválida, devuelve `400`: por ejemplo, con `maxPlayers: 0` el detalle está en `errors.fieldErrors.maxPlayers`.
+
+## Editar y eliminar juegos
+
+Con la misma cookie de administrador, usá el `id` que devolvió el alta:
+
+- `PATCH /api/games/:id`: enviá JSON con los campos a cambiar, por ejemplo `{"platform":"Switch"}`. Devuelve `200` con la ficha completa y conserva los demás campos. Un cuerpo vacío, un campo desconocido o un valor inválido devuelve `400`.
+- `DELETE /api/games/:id`: devuelve `204` sin cuerpo. Si volvés a consultar ese juego, devuelve `404`.
+
+Ambas rutas devuelven `401` sin sesión, `403` con rol `user`, `400` si el ID está mal formado y `404` si el juego no existe.

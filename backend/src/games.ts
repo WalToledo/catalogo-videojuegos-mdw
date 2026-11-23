@@ -11,6 +11,9 @@ const gameSchema = z.strictObject({
   maxPlayers: z.number().int().min(1),
 });
 type Game = z.output<typeof gameSchema>;
+const gameChanges = gameSchema.partial().refine((data) => Object.keys(data).length > 0, {
+  message: "Enviá al menos un campo para editar",
+});
 
 function gameResponse(game: WithId<Game>) {
   return {
@@ -22,11 +25,16 @@ function gameResponse(game: WithId<Game>) {
   };
 }
 
+function validId(id: unknown): id is string {
+  return typeof id === "string" && ObjectId.isValid(id);
+}
+
 export function gamesRouter(db: Db, auth: ReturnType<typeof createAuth>) {
   const router = Router();
   const games = db.collection<Game>("games");
 
-  router.post("/", authMiddleware(auth), requireRole("admin"), json(), async (req, res) => {
+  const adminOnly = [authMiddleware(auth), requireRole("admin")] as const;
+  router.post("/", ...adminOnly, json(), async (req, res) => {
     const result = gameSchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ errors: z.flattenError(result.error) });
@@ -40,8 +48,43 @@ export function gamesRouter(db: Db, auth: ReturnType<typeof createAuth>) {
     res.json(await games.find().map(gameResponse).toArray());
   });
 
+  router.patch("/:id", ...adminOnly, json(), async (req, res) => {
+    if (!validId(req.params.id)) {
+      res.status(400).json({ error: "ID de juego inválido" });
+      return;
+    }
+    const changes = gameChanges.safeParse(req.body);
+    if (!changes.success) {
+      res.status(400).json({ errors: z.flattenError(changes.error) });
+      return;
+    }
+    const game = await games.findOneAndUpdate(
+      { _id: new ObjectId(req.params.id) },
+      { $set: changes.data },
+      { returnDocument: "after" },
+    );
+    if (!game) {
+      res.status(404).json({ error: "Juego no encontrado" });
+      return;
+    }
+    res.json(gameResponse(game));
+  });
+
+  router.delete("/:id", ...adminOnly, async (req, res) => {
+    if (!validId(req.params.id)) {
+      res.status(400).json({ error: "ID de juego inválido" });
+      return;
+    }
+    const result = await games.deleteOne({ _id: new ObjectId(req.params.id) });
+    if (!result.deletedCount) {
+      res.status(404).json({ error: "Juego no encontrado" });
+      return;
+    }
+    res.status(204).end();
+  });
+
   router.get("/:id", async (req, res) => {
-    if (!ObjectId.isValid(req.params.id)) {
+    if (!validId(req.params.id)) {
       res.status(400).json({ error: "ID de juego inválido" });
       return;
     }
