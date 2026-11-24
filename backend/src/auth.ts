@@ -5,6 +5,17 @@ import { defaultAc, userAc } from "better-auth/plugins/admin/access";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import type { Db } from "mongodb";
 
+function betterAuthWithGoogle<Options extends Parameters<typeof betterAuth>[0]>(options: Options) {
+  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } = process.env;
+  return betterAuth({
+    ...options,
+    socialProviders: {
+      ...options.socialProviders,
+      google: clientId && clientSecret ? { clientId, clientSecret } : undefined,
+    },
+  });
+}
+
 export function createAuth(db: Db) {
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret || secret.length < 32) {
@@ -14,7 +25,7 @@ export function createAuth(db: Db) {
     ? process.env.NODE_ENV !== "production"
     : process.env.ENABLE_ROLE_MANAGEMENT === "true";
 
-  return betterAuth({
+  return betterAuthWithGoogle({
     database: mongodbAdapter(db, { transaction: false }),
     secret,
     baseURL: process.env.BETTER_AUTH_URL ?? `http://localhost:${process.env.PORT ?? 3000}`,

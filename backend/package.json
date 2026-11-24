@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "test:oauth": "tsx --test test/oauth.test.ts",
     "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
     "build": "tsc",
     "start": "node --env-file-if-exists=.env dist/server.js",

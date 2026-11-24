@@ -44,21 +44,22 @@ export function Account() {
   const [closing, setClosing] = useState(false)
   const [failed, setFailed] = useState(false)
   const [connecting, setConnecting] = useState(false)
-  const [githubError, setGithubError] = useState(
-    new URLSearchParams(window.location.search).has('github-error'),
-  )
+  const [socialError, setSocialError] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.has('social-error') || params.has('github-error')
+  })
 
-  async function loginWithGitHub() {
+  async function loginWith(provider: 'github' | 'google') {
     setConnecting(true)
-    setGithubError(false)
+    setSocialError(false)
     try {
       const result = await auth.signIn.social({
-        provider: 'github',
+        provider,
         callbackURL: window.location.origin,
-        errorCallbackURL: `${window.location.origin}/?github-error=1`,
+        errorCallbackURL: `${window.location.origin}/?social-error=1`,
       })
-      if (result.error) setGithubError(true)
-    } catch { setGithubError(true) }
+      if (result.error) setSocialError(true)
+    } catch { setSocialError(true) }
     finally { setConnecting(false) }
   }
 
@@ -83,8 +84,9 @@ export function Account() {
     </> : <>
       <button aria-expanded={mode === 'login'} onClick={() => setMode(mode === 'login' ? null : 'login')}>Iniciar sesión</button>
       <button aria-expanded={mode === 'signup'} onClick={() => setMode(mode === 'signup' ? null : 'signup')}>Crear cuenta</button>
-      <button onClick={loginWithGitHub} disabled={connecting}>Continuar con GitHub</button>
-      {githubError && <p role="alert">No se pudo iniciar sesión con GitHub. Podés volver a intentar o ingresar con email.</p>}
+      <button onClick={() => void loginWith('github')} disabled={connecting}>Continuar con GitHub</button>
+      <button onClick={() => void loginWith('google')} disabled={connecting}>Continuar con Google</button>
+      {socialError && <p role="alert">No se pudo iniciar sesión con el proveedor. Podés volver a intentar o ingresar con email.</p>}
       {mode && <AccessForm key={mode} signup={mode === 'signup'} />}
     </>}
   </section>
