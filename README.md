@@ -4,7 +4,7 @@ Trabajo práctico de Desarrollo Web 2. El objetivo es crear un catálogo públic
 
 El catálogo se puede consultar sin cuenta. Quienes tienen rol `admin` también pueden agregar, editar y eliminar juegos. El frontend usa React y TypeScript; el backend, Express, MongoDB y Better Auth para el acceso con email o GitHub.
 
-## Entrega y cuentas de corrección
+## Entrega y cuentas de prueba
 
 - [Abrir el catálogo en Render](https://catalogo-mdw-web.onrender.com) · [Panel de administración](https://catalogo-mdw-web.onrender.com/admin)
 - [Backend en Render](https://catalogo-mdw-api.onrender.com/api/health) · [Repositorio](https://github.com/WalToledo/catalogo-videojuegos-mdw)
@@ -13,8 +13,8 @@ En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas 
 
 | Perfil de prueba | Email | Contraseña |
 |---|---|---|
-| Usuario | `correccion.user@example.com` | `R4LmQk4BVg8PvTYzGQaG9Q` |
-| Administrador | `correccion.admin@example.com` | `UQLFncyZJjTGS9-bcEYwVQ` |
+| Usuario | `prueba.user@example.com` | `R4LmQk4BVg8PvTYzGQaG9Q` |
+| Administrador | `prueba.admin@example.com` | `UQLFncyZJjTGS9-bcEYwVQ` |
 
 **Recorrido de corrección:** abrí una ficha y recargá la página. Con el usuario común entrá a `/admin`: debe aparecer el mensaje de permisos. Cerrá sesión y repetí con el administrador: creá una ficha de prueba, cambiá solo su plataforma, recargá para comprobar el cambio y eliminá esa misma ficha.
 
@@ -134,7 +134,7 @@ Con una sesión `admin`, elegí **Administrar catálogo** o abrí `http://localh
 Para probar con una cuenta administradora en tu base local, registrá una cuenta de prueba y ejecutá en `mongosh`, sobre la base del catálogo, reemplazando el email por el de esa cuenta:
 
 ```js
-db.user.updateOne({ email: "admin-de-prueba@example.com" }, { $set: { role: "admin" } })
+db.user.updateOne({ email: "prueba.admin@example.com" }, { $set: { role: "admin" } })
 ```
 
 Verificá que `matchedCount` sea `1` y volvé a iniciar sesión con esa cuenta.
