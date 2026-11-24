@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { auth } from './auth'
+import './MyNote.css'
 
 export function MyNote({ gameId }: { gameId: string }) {
   const { data, isPending } = auth.useSession()
@@ -50,7 +51,7 @@ function Editor({ gameId }: { gameId: string }) {
     }
   }
 
-  return <form className="note-form" onSubmit={save}>
+  return <form className="game-form note-form" onSubmit={save}>
     <label>
       Mi nota privada
       <textarea

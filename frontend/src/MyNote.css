@@ -1,0 +1,14 @@
+.note-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: .5rem .65rem;
+  border: 1px solid #8996ac;
+  border-radius: .4rem;
+  background: var(--paper);
+  font: inherit;
+  color: inherit;
+  resize: vertical;
+}
+
+.note-form p { margin-block: .5rem; }
+.note-form [role="status"]:empty { margin: 0; }

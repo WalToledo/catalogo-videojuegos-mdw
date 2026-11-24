@@ -28,7 +28,7 @@ a { color: var(--accent); text-underline-offset: .2em; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-main > ul, dl, .account, .game-form, .note-form {
+main > ul, dl, .account, .game-form {
   background: var(--paper);
   border: 1px solid var(--edge);
   border-radius: .75rem;
@@ -47,17 +47,14 @@ dd + dt { margin-top: .85rem; }
 .game-form fieldset { min-width: 0; margin: 0; border: 0; padding: 0; }
 .game-form h2 { margin-top: 0; }
 label { display: grid; gap: .3rem; margin: .85rem 0; font-weight: 600; }
-input, textarea, button { font: inherit; color: inherit; border-radius: .4rem; }
-input, textarea {
+input, button { font: inherit; color: inherit; border-radius: .4rem; }
+input {
   width: 100%;
   min-width: 0;
   padding: .5rem .65rem;
   border: 1px solid #8996ac;
   background: var(--paper);
 }
-.note-form textarea { resize: vertical; }
-.note-form p { margin-block: .5rem; }
-.note-form [role="status"]:empty { margin: 0; }
 button {
   padding: .4rem .8rem;
   margin: .15rem .2rem .15rem 0;
