@@ -2,11 +2,49 @@
 
 Trabajo práctico de Desarrollo Web 2. El objetivo es crear un catálogo público de videojuegos con una ficha por juego que muestre el título, la plataforma, la fecha de lanzamiento y la cantidad máxima de jugadores.
 
-Las personas con rol de administrador podrán agregar, editar y eliminar juegos. El proyecto usará React y TypeScript para el frontend, Express y MongoDB para la API y Better Auth para el acceso con email o GitHub.
+El catálogo se puede consultar sin cuenta. Quienes tienen rol `admin` también pueden agregar, editar y eliminar juegos. El frontend usa React y TypeScript; el backend, Express, MongoDB y Better Auth para el acceso con email o GitHub.
+
+## Entrega y cuentas de corrección
+
+- [Abrir el catálogo en Render](https://catalogo-mdw-web.onrender.com) · [Panel de administración](https://catalogo-mdw-web.onrender.com/admin)
+- [Backend en Render](https://catalogo-mdw-api.onrender.com/api/health) · [Repositorio](https://github.com/WalToledo/catalogo-videojuegos-mdw)
+
+En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas de demostración existen en producción, no en la base local:
+
+| Perfil de prueba | Email | Contraseña |
+|---|---|---|
+| Usuario | `correccion.user@example.com` | `R4LmQk4BVg8PvTYzGQaG9Q` |
+| Administrador | `correccion.admin@example.com` | `UQLFncyZJjTGS9-bcEYwVQ` |
+
+**Recorrido de corrección:** abrí una ficha y recargá la página. Con el usuario común entrá a `/admin`: debe aparecer el mensaje de permisos. Cerrá sesión y repetí con el administrador: creá una ficha de prueba, cambiá solo su plataforma, recargá para comprobar el cambio y eliminá esa misma ficha.
+
+### Rutas de la API
+
+| Método | Ruta | Acceso | Resultado |
+|---|---|---|---|
+| GET | `/api/health` | Público | Estado del servicio |
+| GET | `/api/games` | Público | Listado (`200`) |
+| GET | `/api/games/:id` | Público | Ficha (`200`) |
+| POST | `/api/games` | Admin | Alta (`201`) |
+| PATCH | `/api/games/:id` | Admin | Edición parcial (`200`) |
+| DELETE | `/api/games/:id` | Admin | Baja (`204`, sin cuerpo) |
+| POST | `/api/auth/sign-up/email` | Público | Registro con rol `user` |
+| POST | `/api/auth/sign-in/email` | Público | Inicio de sesión |
+| POST | `/api/auth/sign-in/social` | Público | Inicio de OAuth con GitHub |
+| GET | `/api/auth/callback/github` | Retorno de GitHub | Completa el ingreso |
+| GET | `/api/auth/get-session` | Público | Sesión actual o `null` |
+| POST | `/api/auth/sign-out` | Con sesión | Cierre de sesión |
 
 ## Probar el catálogo en local
 
-Con Node.js 22.9 o posterior y MongoDB en ejecución:
+Usá Node.js 24 y MongoDB en ejecución. Para empezar desde cero:
+
+```bash
+git clone https://github.com/WalToledo/catalogo-videojuegos-mdw.git
+cd catalogo-videojuegos-mdw
+```
+
+Si usás Docker y todavía no tenés MongoDB local, ejecutá una vez `docker run -d --name catalogo-mongo -p 127.0.0.1:27017:27017 -v catalogo-mdw-data:/data/db mongo:8`. Si ya existe el contenedor, alcanza con `docker start catalogo-mongo`. Desde la raíz del repositorio:
 
 ```bash
 cd backend
