@@ -2,7 +2,7 @@
 
 Trabajo práctico de Desarrollo Web 2. El objetivo es crear un catálogo público de videojuegos con una ficha por juego que muestre el título, la plataforma, la fecha de lanzamiento y la cantidad máxima de jugadores.
 
-El catálogo se puede consultar sin cuenta. Quienes tienen rol `admin` también pueden agregar, editar y eliminar juegos. El frontend usa React y TypeScript; el backend, Express, MongoDB y Better Auth para el acceso con email o GitHub.
+El catálogo se puede consultar sin cuenta. Quienes tienen rol `admin` también pueden agregar, editar y eliminar juegos. El frontend usa React y TypeScript; el backend, Express, MongoDB y Better Auth para el acceso por email o, si están configurados, GitHub y Google.
 
 ## Entrega y cuentas de prueba
 
@@ -30,8 +30,9 @@ En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas 
 | DELETE | `/api/games/:id` | Admin | Baja (`204`, sin cuerpo) |
 | POST | `/api/auth/sign-up/email` | Público | Registro con rol `user` |
 | POST | `/api/auth/sign-in/email` | Público | Inicio de sesión |
-| POST | `/api/auth/sign-in/social` | Público | Inicio de OAuth con GitHub |
+| POST | `/api/auth/sign-in/social` | Público | Inicio de OAuth con GitHub o Google |
 | GET | `/api/auth/callback/github` | Retorno de GitHub | Completa el ingreso |
+| GET | `/api/auth/callback/google` | Retorno de Google | Completa el ingreso |
 | GET | `/api/auth/get-session` | Público | Sesión actual o `null` |
 | POST | `/api/auth/sign-out` | Con sesión | Cierre de sesión |
 
@@ -127,6 +128,23 @@ Desde **Crear cuenta** podés registrarte con nombre, email y contraseña. Si ya
 
 Si usás otros puertos, ajustá también `FRONTEND_ORIGIN`, `BETTER_AUTH_URL` y las URLs registradas en GitHub. Usá `localhost` tanto para el frontend como para el callback para compartir la cookie de sesión.
 
+### Iniciar sesión con Google en local
+
+1. En [Google Auth Platform](https://console.cloud.google.com/auth/overview), configurá la pantalla de consentimiento. Si elegís una audiencia externa en modo de prueba, agregá como **usuario de prueba** la cuenta de Google con la que vas a ingresar.
+2. En **Clientes**, creá un cliente OAuth de tipo **Aplicación web**. En **URIs de redireccionamiento autorizados**, agregá `http://localhost:3000/api/auth/callback/google`. Debe coincidir exactamente con `BETTER_AUTH_URL` más `/api/auth/callback/google`.
+3. Cargá el ID y el secreto en `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `backend/.env` y reiniciá el backend. No compartas el secreto ni lo subas al repositorio. Si falta alguna de estas variables, Google queda deshabilitado sin afectar el acceso por email o GitHub.
+4. Abrí `http://localhost:5173`, elegí **Continuar con Google** y autorizá la app. Al volver al catálogo debería aparecer tu email y seguir visible al recargar. Si cancelás el consentimiento, deberías volver con un aviso y poder intentar de nuevo.
+
+### Pruebas OAuth sin credenciales reales
+
+Con MongoDB local escuchando en `127.0.0.1:27017` y las dependencias del backend instaladas, ejecutá desde `backend/`:
+
+```bash
+npm run test:oauth
+```
+
+No hace falta levantar Vite ni Express ni configurar `.env`. Las pruebas usan el manejador real de Better Auth, credenciales ficticias y una base local temporal que se elimina al finalizar. Comprueban las URLs de autorización, simulan las respuestas de Google y GitHub y consultan la sesión con la cookie que entrega cada callback. No contactan a los proveedores ni sustituyen la prueba de consentimiento real en un navegador.
+
 ### Administrar el catálogo
 
 Con una sesión `admin`, elegí **Administrar catálogo** o abrí `http://localhost:5173/admin`. Desde ahí podés crear un juego, editar su ficha o eliminarlo. Las cuentas nuevas tienen rol `user`: pueden consultar el catálogo, pero no modificarlo.
@@ -147,11 +165,13 @@ El `render.yaml` de la raíz define dos servicios: `catalogo-mdw-api` (Express) 
 2. **Publicá la rama con el Blueprint y el panel.** En Render, elegí **New → Blueprint**, conectá este repositorio y seleccioná la rama publicada que contiene `render.yaml` (normalmente `main` después del merge).
 3. **Configurá las variables del backend.** `MONGODB_URI` es la URI de Atlas; `BETTER_AUTH_SECRET` lo genera Render. Poné en `BETTER_AUTH_URL` la URL HTTPS del **frontend**, sin `/api` (ejemplo: `https://catalogo-mdw-web.onrender.com`). Render asigna el puerto, no cargues el `.env` local. El cliente usa rutas relativas y no necesita secretos ni una variable para la URL de la API.
 4. **Conectá GitHub OAuth.** Creá una OAuth App de producción para conservar la local. Usá la URL HTTPS del **frontend** como *Homepage URL* y esa misma URL más `/api/auth/callback/github` como *Redirect URI*. Cargá `GITHUB_CLIENT_ID` y `GITHUB_CLIENT_SECRET` en el **backend**, no en Vite. Si el dominio definitivo cambia, corregí GitHub y `BETTER_AUTH_URL` y volvé a desplegar.
-5. **Verificá los dominios y los rewrites.** El primer rewrite del Static Site envía `/api/*` a `https://<backend-real>/api/*`; el segundo envía `/*` a `/index.html`. Si el dominio del backend no coincide con el de `render.yaml`, corregí `destination` con el dominio asignado, publicá el cambio y sincronizá el Blueprint. Un redirect no reemplaza el rewrite: el navegador debe seguir en el dominio del frontend.
+5. **Conectá Google OAuth (opcional).** Creá un cliente web para Render. Registrá la URL HTTPS pública del **frontend** más `/api/auth/callback/google` como URI de redireccionamiento autorizado (ejemplo: `https://catalogo-mdw-web.onrender.com/api/auth/callback/google`). Cargá `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` solo en el servicio **backend** de Render. Si la pantalla de consentimiento está en modo de prueba, agregá las cuentas autorizadas antes de verificar el flujo.
+6. **Verificá los dominios y los rewrites.** El primer rewrite del Static Site envía `/api/*` a `https://<backend-real>/api/*`; el segundo envía `/*` a `/index.html`. Si el dominio del backend no coincide con el de `render.yaml`, corregí `destination` con el dominio asignado, publicá el cambio y sincronizá el Blueprint. Un redirect no reemplaza el rewrite: el navegador debe seguir en el dominio del frontend.
 
 ### Prueba de aceptación en producción
 
 - Abrí `/api/health` desde **ambos** dominios: deben devolver `{"status":"ok"}`. En el frontend, `/api/games` debe devolver JSON, no el HTML del catálogo.
 - Si la base está vacía, registrá una cuenta en producción, asignale `admin` en la base de Atlas y volvé a ingresar. Creá una ficha desde `/admin`. Abrila desde el listado público y presioná **F5**: debe seguir mostrándose.
 - Cerrá sesión e ingresá con **Continuar con GitHub** desde el frontend. Tras el callback, verificá que aparece tu email y que sigue visible al recargar. En **Red/Network** del navegador, las llamadas del catálogo y de sesión deben usar `/api/...` en el dominio del **frontend**.
+- Si está configurado Google, repetí el recorrido con **Continuar con Google** y una cuenta habilitada para dar consentimiento. Si Google devuelve `redirect_uri_mismatch`, compará la URI registrada con `BETTER_AUTH_URL` más `/api/auth/callback/google`.
 - Si el backend no arranca, revisá los logs, el usuario de Atlas y los permisos de red. Si una ficha da 404 solo al recargar, revisá el rewrite a `/index.html`. Si GitHub rechaza el callback, compará su URI con `BETTER_AUTH_URL` + `/api/auth/callback/github`.

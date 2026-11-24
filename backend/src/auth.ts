@@ -16,12 +16,16 @@ export function createAuth(db: Db) {
       process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
     ],
     emailAndPassword: { enabled: true },
-    socialProviders: process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? {
-      github: {
+    socialProviders: {
+      github: process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? {
         clientId: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      },
-    } : {},
+      } : undefined,
+      google: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      } : undefined,
+    },
     user: {
       additionalFields: {
         role: { type: "string", required: true, defaultValue: "user", input: false },
