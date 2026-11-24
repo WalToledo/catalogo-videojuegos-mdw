@@ -11,10 +11,10 @@ El catálogo se puede consultar sin cuenta. Quienes tienen rol `admin` también 
 
 En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas de demostración existen en producción, no en la base local:
 
-| Perfil de prueba | Email | Contraseña |
+| Rol | Email | Contraseña |
 |---|---|---|
-| Usuario | `prueba.user@example.com` | `R4LmQk4BVg8PvTYzGQaG9Q` |
-| Administrador | `prueba.admin@example.com` | `UQLFncyZJjTGS9-bcEYwVQ` |
+| admin | `admin@example.com` | `UQLFncyZJjTGS9-bcEYwVQ` |
+| user | `user@example.com` | `R4LmQk4BVg8PvTYzGQaG9Q` |
 
 **Recorrido de corrección:** abrí una ficha y recargá la página. Con el usuario común entrá a `/admin`: debe aparecer el mensaje de permisos. Cerrá sesión y repetí con el administrador: creá una ficha de prueba, cambiá solo su plataforma, recargá para comprobar el cambio y eliminá esa misma ficha.
 
@@ -134,7 +134,7 @@ Con una sesión `admin`, elegí **Administrar catálogo** o abrí `http://localh
 Para probar con una cuenta administradora en tu base local, registrá una cuenta de prueba y ejecutá en `mongosh`, sobre la base del catálogo, reemplazando el email por el de esa cuenta:
 
 ```js
-db.user.updateOne({ email: "prueba.admin@example.com" }, { $set: { role: "admin" } })
+db.user.updateOne({ email: "admin@example.com" }, { $set: { role: "admin" } })
 ```
 
 Verificá que `matchedCount` sea `1` y volvé a iniciar sesión con esa cuenta.
