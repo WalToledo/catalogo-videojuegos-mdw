@@ -117,6 +117,8 @@ npm run dev
 
 Abrí la URL que indica Vite (normalmente `http://localhost:5173`). Seleccioná el título de un juego para abrir su ficha en `/juegos/:id`. El servidor de desarrollo reenvía las consultas `/api` al backend.
 
+En el listado podés buscar por parte del título y filtrar por plataforma al mismo tiempo. La búsqueda reconoce títulos con o sin tildes y en mayúsculas o minúsculas. Con **Limpiar filtros** volvés a ver todos los juegos.
+
 Desde **Crear cuenta** podés registrarte con nombre, email y contraseña. Si ya tenés cuenta, usá **Iniciar sesión**. Con la sesión activa se muestra tu email, incluso después de recargar; **Cerrar sesión** te devuelve al catálogo público. En desarrollo, si abrís Vite en otro origen, configurá `FRONTEND_ORIGIN` en `backend/.env` con esa URL exacta y reiniciá el backend.
 
 ### Iniciar sesión con GitHub en local

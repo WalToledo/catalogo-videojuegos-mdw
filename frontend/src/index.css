@@ -47,8 +47,8 @@ dd + dt { margin-top: .85rem; }
 .game-form fieldset { min-width: 0; margin: 0; border: 0; padding: 0; }
 .game-form h2 { margin-top: 0; }
 label { display: grid; gap: .3rem; margin: .85rem 0; font-weight: 600; }
-input, button { font: inherit; color: inherit; border-radius: .4rem; }
-input {
+input, select, button { font: inherit; color: inherit; border-radius: .4rem; }
+input, select {
   width: 100%;
   min-width: 0;
   padding: .5rem .65rem;
@@ -73,6 +73,9 @@ form small, [role="alert"] { color: #9c2233; }
 form small:empty { display: none; }
 
 main > .catalog-list { padding: 0; }
+.catalog-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
+.catalog-filters label { flex: 1 1 13rem; min-width: 0; margin: 0; }
+.catalog-filters button { margin: 0; }
 .catalog-list > li { padding: 0; }
 .catalog-list a {
   display: grid;
