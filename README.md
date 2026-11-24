@@ -34,6 +34,8 @@ En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas 
 | GET | `/api/auth/callback/github` | Retorno de GitHub | Completa el ingreso |
 | GET | `/api/auth/get-session` | Público | Sesión actual o `null` |
 | POST | `/api/auth/sign-out` | Con sesión | Cierre de sesión |
+| GET | `/api/auth/admin/list-users` | Admin, si se habilitó la gestión | Lista paginada de cuentas (`200`) |
+| POST | `/api/auth/admin/set-role` | Admin, si se habilitó la gestión | Cambia el rol de otra cuenta (`200`) |
 
 ## Probar el catálogo en local
 
@@ -139,7 +141,33 @@ Para probar con una cuenta administradora en tu base local, registrá una cuenta
 db.user.updateOne({ email: "admin@example.com" }, { $set: { role: "admin" } })
 ```
 
-Verificá que `matchedCount` sea `1` y volvé a iniciar sesión con esa cuenta.
+Verificá que `matchedCount` sea `1`. Si ya tenías una sesión abierta, recargá la página.
+
+### Gestionar roles
+
+En `/admin`, la sección **Roles de las cuentas** muestra el email y el rol de cada cuenta. Seleccioná **Hacer admin** para habilitar la administración del catálogo y de los roles, o **Quitar rol admin** para volver a dejar esa cuenta como `user`. No se puede cambiar el rol de la propia cuenta desde la UI ni desde la API.
+
+No hace falta cerrar sesión en la cuenta afectada. Al recargar la página, la interfaz muestra los nuevos permisos; la siguiente solicitud a la API ya usa el rol actualizado. Las cuentas con rol `user` pueden seguir consultando el catálogo público, pero no administrar juegos ni roles.
+
+En la API, `GET /api/auth/admin/list-users` acepta `limit` y `offset`. Para `POST /api/auth/admin/set-role`, enviá `{"userId":"<id de la cuenta>","role":"admin"}` o `"role":"user"`, con la cookie del administrador y `Origin` correspondiente a `BETTER_AUTH_URL`. Ambas rutas devuelven `401` sin sesión y `403` con rol `user` o con la gestión deshabilitada. Intentar cambiar el propio rol también devuelve `403`; un rol inválido devuelve `400`.
+
+La gestión está habilitada por defecto en desarrollo. En producción está deshabilitada por defecto para que una cuenta admin de demostración con credenciales públicas no pueda listar cuentas ni cambiar permisos. Antes de configurar `ENABLE_ROLE_MANAGEMENT=true` en el backend de producción, degradá las cuentas admin de demostración a `user` en la base, revocá sus sesiones y conservá al menos una cuenta admin privada. Esta configuración no cambia los permisos del CRUD de juegos.
+
+#### Prueba reproducible con sesiones reales
+
+Con Node.js 24, MongoDB escuchando en `127.0.0.1:27017` y Chrome instalado, ejecutá desde la raíz:
+
+```bash
+npm --prefix backend ci
+npm --prefix frontend ci
+npm --prefix backend run build
+npm --prefix frontend run build
+npm --prefix frontend run lint
+npm install --prefix /tmp/opencode/catalogo-stage7-qa playwright-core@1.65.1
+node --test tests/roles.e2e.mjs
+```
+
+La prueba inicia el backend en `38193` y una vista previa del frontend compilado en `38194`. Si alguno está ocupado, cambiá `ROLES_BACKEND_PORT` y `ROLES_WEB_PORT`. Podés elegir otra instalación de Playwright con `PLAYWRIGHT_HOME` y otro ejecutable de Chrome con `CHROME_PATH` (por defecto `/usr/bin/google-chrome`). La prueba crea y elimina una base MongoDB temporal propia; no toca la base del catálogo ni Render.
 
 ## Desplegar en Render (etapa 10)
 

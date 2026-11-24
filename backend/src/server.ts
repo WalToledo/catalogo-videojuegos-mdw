@@ -23,6 +23,7 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(port, () => {
+app.listen(port, (error?: Error) => {
+  if (error) throw error;
   console.log(`Servidor en http://localhost:${port}`);
 });
