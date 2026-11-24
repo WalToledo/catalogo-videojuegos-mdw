@@ -165,13 +165,15 @@ Verificá que `matchedCount` sea `1`. Si ya tenías una sesión abierta, recarg�
 
 ### Gestionar roles
 
-En `/admin`, la sección **Roles de las cuentas** muestra el email y el rol de cada cuenta. Seleccioná **Hacer admin** para habilitar la administración del catálogo y de los roles, o **Quitar rol admin** para volver a dejar esa cuenta como `user`. No se puede cambiar el rol de la propia cuenta desde la UI ni desde la API.
+En `/admin`, la sección **Roles de las cuentas** muestra el email y el rol de las cuentas que se pueden administrar en ese entorno. Seleccioná **Hacer admin** para habilitar la administración del catálogo y de los roles, o **Quitar rol admin** para volver a dejar esa cuenta como `user`. No se puede cambiar el rol de la propia cuenta desde la UI ni desde la API.
 
 No hace falta cerrar sesión en la cuenta afectada. Al recargar la página, la interfaz muestra los nuevos permisos; la siguiente solicitud a la API ya usa el rol actualizado. Las cuentas con rol `user` pueden seguir consultando el catálogo público, pero no administrar juegos ni roles.
 
 En la API, `GET /api/auth/admin/list-users` acepta `limit` y `offset`. Para `POST /api/auth/admin/set-role`, enviá `{"userId":"<id de la cuenta>","role":"admin"}` o `"role":"user"`, con la cookie del administrador y `Origin` correspondiente a `BETTER_AUTH_URL`. Ambas rutas devuelven `401` sin sesión y `403` con rol `user` o con la gestión deshabilitada. Intentar cambiar el propio rol también devuelve `403`; un rol inválido devuelve `400`.
 
-La gestión está habilitada por defecto en desarrollo. En producción está deshabilitada por defecto para que una cuenta admin de demostración con credenciales públicas no pueda listar cuentas ni cambiar permisos. Antes de configurar `ENABLE_ROLE_MANAGEMENT=true` en el backend de producción, degradá las cuentas admin de demostración a `user` en la base, revocá sus sesiones y conservá al menos una cuenta admin privada. Esta configuración no cambia los permisos del CRUD de juegos.
+**Prueba de corrección en Render.** Ingresá como `admin@example.com`, abrí `/admin` y, en **Roles de las cuentas**, elegí **Hacer admin** para `user@example.com`. En una ventana de incógnito, ingresá con esa segunda cuenta y abrí el panel. Volvé a la primera ventana y elegí **Quitar rol admin**. Al recargar la segunda ventana, debe aparecer el mensaje de permisos. Así la cuenta de usuario queda lista para la próxima corrección.
+
+La gestión está habilitada por defecto. En producción el servidor limita el listado y los cambios de rol a la cuenta de práctica `user@example.com`. En desarrollo se pueden administrar las demás cuentas locales. Para desactivar expresamente la función, configurá `ENABLE_ROLE_MANAGEMENT=false` en el backend.
 
 #### Prueba reproducible con sesiones reales
 

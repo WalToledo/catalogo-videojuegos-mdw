@@ -21,9 +21,9 @@ export function createAuth(db: Db) {
   if (!secret || secret.length < 32) {
     throw new Error("Configurá BETTER_AUTH_SECRET con al menos 32 caracteres en backend/.env.");
   }
-  const roleManagement = process.env.ENABLE_ROLE_MANAGEMENT === undefined
-    ? process.env.NODE_ENV !== "production"
-    : process.env.ENABLE_ROLE_MANAGEMENT === "true";
+  const roleManagement = (process.env.ENABLE_ROLE_MANAGEMENT ?? "true") === "true";
+  // En la entrega pública, se practica con la cuenta user publicada en el README.
+  const practiceEmail = process.env.NODE_ENV === "production" ? "user@example.com" : undefined;
 
   return betterAuthWithGoogle({
     database: mongodbAdapter(db, { transaction: false }),
@@ -49,6 +49,11 @@ export function createAuth(db: Db) {
     })],
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        if (practiceEmail && ctx.path === "/admin/list-users") {
+          return { context: { query: {
+            ...ctx.query, filterField: "email", filterOperator: "eq", filterValue: practiceEmail,
+          } } };
+        }
         if (!roleManagement || ctx.path !== "/admin/set-role") return;
         const session = await getAuthoritativeSessionFromCtx(ctx);
         if (!session || !("role" in session.user) || session.user.role !== "admin") return;
@@ -64,6 +69,15 @@ export function createAuth(db: Db) {
             code: "INVALID_ROLE",
             message: "El rol debe ser admin o user",
           });
+        }
+        if (practiceEmail) {
+          const target = await ctx.context.internalAdapter.findUserById(ctx.body.userId);
+          if (target?.email !== practiceEmail) {
+            throw APIError.from("FORBIDDEN", {
+              code: "PRACTICE_ACCOUNT_REQUIRED",
+              message: "En este despliegue solo se puede cambiar el rol de la cuenta de práctica.",
+            });
+          }
         }
       }),
     },
