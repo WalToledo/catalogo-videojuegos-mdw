@@ -20,8 +20,9 @@ const backendUrl = `http://127.0.0.1:${backendPort}`
 const origin = `http://127.0.0.1:${webPort}`
 const mongoUrl = 'mongodb://127.0.0.1:27017'
 const password = randomBytes(24).toString('hex')
-const adminEmail = 'roles-admin@example.com'
-const userEmail = 'roles-user@example.com'
+const adminEmail = 'admin@example.com'
+const userEmail = 'user@example.com'
+const personalEmail = 'personal@example.com'
 const game = { title: 'Juego de prueba de roles', platform: 'PC', releaseDate: '2025-01-01', maxPlayers: 2 }
 
 async function status(response, expected) {
@@ -83,7 +84,7 @@ async function withTestServices(enableRoles, exercise) {
       PORT: String(backendPort),
     }
     delete env.ENABLE_ROLE_MANAGEMENT
-    if (enableRoles) env.ENABLE_ROLE_MANAGEMENT = 'true'
+    if (enableRoles !== undefined) env.ENABLE_ROLE_MANAGEMENT = String(enableRoles)
     server = spawn(process.execPath, ['dist/server.js'], {
       cwd: fileURLToPath(backend),
       env,
@@ -104,7 +105,7 @@ async function withTestServices(enableRoles, exercise) {
     const setup = await browser.newContext({ baseURL: origin, extraHTTPHeaders: { origin } })
     await status(await setup.request.get('/api/auth/admin/list-users'), 401)
     await status(await setup.request.post('/api/auth/admin/set-role', { data: { userId: 'x', role: 'admin' } }), 401)
-    for (const email of [adminEmail, userEmail]) {
+    for (const email of [adminEmail, userEmail, personalEmail]) {
       const signup = await status(await setup.request.post('/api/auth/sign-up/email', {
         data: { name: email, email, password },
       }), 200)
@@ -134,12 +135,21 @@ async function withTestServices(enableRoles, exercise) {
 }
 
 test('promoción y degradación con una sesión real en UI y API', { timeout: 75_000 }, async () => {
-  await withTestServices(true, async (browser) => {
+  await withTestServices(undefined, async (browser) => {
     const admin = await signedInPage(browser, adminEmail)
     await admin.getByRole('link', { name: 'Administrar catálogo' }).click()
     const roles = admin.getByRole('region', { name: 'Roles de las cuentas' })
     const promote = roles.getByRole('button', { name: `Hacer admin: ${userEmail}` })
     await promote.waitFor()
+    const listing = await (await status(await admin.request.get('/api/auth/admin/list-users'), 200)).json()
+    assert.deepEqual(listing.users.map(row => row.email), [userEmail])
+    assert.equal(listing.total, 1)
+    const personal = await signedInPage(browser, personalEmail)
+    const personalSession = await session(personal, 'user')
+    await status(await admin.request.post('/api/auth/admin/set-role', {
+      data: { userId: personalSession.user.id, role: 'admin' },
+    }), 403)
+    await session(personal, 'user', personalSession.session.id)
     const initialAdmin = await session(admin, 'admin')
     assert.equal(await roles.getByRole('listitem').filter({ hasText: adminEmail }).getByRole('button').count(), 0)
     const selfChange = await status(await admin.request.post('/api/auth/admin/set-role', {
@@ -180,7 +190,7 @@ test('promoción y degradación con una sesión real en UI y API', { timeout: 75
   })
 })
 
-test('producción conserva el CRUD, pero deshabilita la gestión de roles por defecto', { timeout: 45_000 }, async () => {
+test('la desactivación explícita de roles conserva el CRUD', { timeout: 45_000 }, async () => {
   await withTestServices(false, async (browser) => {
     const admin = await signedInPage(browser, adminEmail)
     const list = admin.waitForResponse(response => new URL(response.url()).pathname === '/api/auth/admin/list-users')
