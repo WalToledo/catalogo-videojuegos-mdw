@@ -75,7 +75,7 @@ export function Account() {
   }
 
   return <section aria-label="Mi cuenta" className="account">
-    {isPending ? <span>Consultando sesión…</span> : error ? <>
+    {isPending && !mode ? <span>Consultando sesión…</span> : error ? <>
       <span>No pudimos consultar tu sesión.</span> <button onClick={() => void refetch()}>Reintentar</button>
     </> : data ? <>
       <span>Sesión de {data.user.email}</span> <button onClick={logout} disabled={closing}>Cerrar sesión</button>
@@ -87,7 +87,7 @@ export function Account() {
       <button onClick={() => void loginWith('github')} disabled={connecting}>Continuar con GitHub</button>
       <button onClick={() => void loginWith('google')} disabled={connecting}>Continuar con Google</button>
       {socialError && <p role="alert">No se pudo iniciar sesión con el proveedor. Podés volver a intentar o ingresar con email.</p>}
-      {mode && <AccessForm key={mode} signup={mode === 'signup'} />}
     </>}
+    {!data && mode && <AccessForm key={mode} signup={mode === 'signup'} />}
   </section>
 }
