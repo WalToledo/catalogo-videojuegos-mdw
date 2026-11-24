@@ -25,6 +25,8 @@ En el catálogo, elegí **Iniciar sesión** e ingresá con email. Estas cuentas 
 | GET | `/api/health` | Público | Estado del servicio |
 | GET | `/api/games` | Público | Listado (`200`) |
 | GET | `/api/games/:id` | Público | Ficha (`200`) |
+| GET | `/api/games/:id/my-note` | Con sesión | Lee la nota propia (`200`) |
+| PUT | `/api/games/:id/my-note` | Con sesión | Crea o reemplaza la nota propia (`200`) |
 | POST | `/api/games` | Admin | Alta (`201`) |
 | PATCH | `/api/games/:id` | Admin | Edición parcial (`200`) |
 | DELETE | `/api/games/:id` | Admin | Baja (`204`, sin cuerpo) |
@@ -168,6 +170,22 @@ node --test tests/roles.e2e.mjs
 ```
 
 La prueba inicia el backend en `38193` y una vista previa del frontend compilado en `38194`. Si alguno está ocupado, cambiá `ROLES_BACKEND_PORT` y `ROLES_WEB_PORT`. Podés elegir otra instalación de Playwright con `PLAYWRIGHT_HOME` y otro ejecutable de Chrome con `CHROME_PATH` (por defecto `/usr/bin/google-chrome`). La prueba crea y elimina una base MongoDB temporal propia; no toca la base del catálogo ni Render.
+
+### Opcional: notas privadas por juego
+
+Iniciá sesión, abrí una ficha y escribí en **Mi nota privada**. Al elegir **Guardar nota**, se conserva una nota para ese juego y esa cuenta. Podés editarla y volver a guardar. Recargá la ficha o volvé a iniciar sesión para comprobar que sigue ahí. El editor solo aparece con sesión: si entrás con otra cuenta, verás su propia nota o un campo vacío.
+
+La API identifica a la persona por la cookie de sesión; no acepta un ID de usuario en el cuerpo. `GET` devuelve `{"text":""}` si todavía no hay nota. `PUT` recibe `{"text":"Mi nota"}` y devuelve el texto guardado. El texto se guarda sin espacios en los extremos y debe tener entre 1 y 2000 caracteres. Sin sesión devuelve `401`; con ID mal formado o contenido inválido, `400`; si el juego no existe, `404`. Las notas no aparecen en las respuestas públicas.
+
+Para verificarlo en local, con Node.js 24, las dependencias instaladas y MongoDB escuchando en `127.0.0.1:27017`, corré desde la raíz:
+
+```bash
+npm --prefix backend run test:notes
+npm --prefix frontend run build
+npm --prefix frontend run lint
+```
+
+La integración compila el backend, inicia su propio servidor en el puerto `3317` (configurable con `NOTES_TEST_PORT`), inicia sesión con dos cuentas de prueba y elimina la base temporal única al terminar. No lee `.env` ni se conecta a producción.
 
 ## Desplegar en Render (etapa 10)
 
