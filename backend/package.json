@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
     "build": "tsc",
-    "start": "node --env-file-if-exists=.env dist/server.js"
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "test:notes": "npm run build && node --test test/notes.integration.test.js"
   },
   "dependencies": {
     "better-auth": "^1.7.27",

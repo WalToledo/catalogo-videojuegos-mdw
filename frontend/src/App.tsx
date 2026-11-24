@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Account } from './Account'
+import { MyNote } from './MyNote'
 import { Admin, type Game } from './Admin'
 
 type View = { list: Game[] } | { game: Game } | { message: string }
@@ -61,5 +62,6 @@ function Catalog() {
       <dt>Fecha de lanzamiento</dt><dd><time dateTime={view.game.releaseDate}>{Number.isFinite(Date.parse(view.game.releaseDate)) ? releaseFormat.format(Date.parse(view.game.releaseDate)) : view.game.releaseDate}</time></dd>
       <dt>Máximo de jugadores</dt><dd>{view.game.maxPlayers}</dd>
     </dl>}
+    {'game' in view && <MyNote gameId={view.game.id} />}
   </main>
 }
