@@ -1,19 +1,103 @@
-:root { font-family: system-ui, sans-serif; color: #18233b; background: #f3f5fa; }
+:root {
+  --ink: #18233b;
+  --accent: #274b99;
+  --edge: #d7deea;
+  --paper: #fff;
+  --canvas: #f3f5fa;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+* { box-sizing: border-box; }
 body { margin: 0; }
-main { max-width: 48rem; margin: 3rem auto; padding: 1.5rem; }
-h1 { line-height: 1.15; overflow-wrap: anywhere; }
-a { color: #274b99; text-underline-offset: .2em; }
-ul, dl { background: white; border-radius: .75rem; padding: 1.5rem 2rem; }
-li { margin: .6rem 0; }
-dt { font-weight: 650; }
-dd { margin: .25rem 0 1rem; }
-.account { background: white; padding: 1rem; border-radius: .75rem; margin-bottom: 1rem; }
-.account button { font: inherit; margin: .25rem; cursor: pointer; }
-.account form { max-width: 24rem; }
-.account label { display: grid; gap: .25rem; margin: .75rem .25rem; }
-.account input { font: inherit; padding: .4rem; }
-.account small, .account [role="alert"] { color: #9c2233; }
-.game-form fieldset { max-width: 24rem; border: 0; padding: 0; }
-.game-form label { display: grid; gap: .25rem; margin: .75rem 0; }
-.game-form input { font: inherit; padding: .4rem; }
-.game-form small { color: #9c2233; }
+main {
+  max-width: 51rem;
+  margin: clamp(1rem, 5vw, 3rem) auto;
+  padding: 0 clamp(1rem, 4vw, 1.5rem);
+  overflow-wrap: anywhere;
+}
+h1 {
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+h2 { font-size: 1.35rem; line-height: 1.25; }
+a { color: var(--accent); text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+main > ul, dl, .account, .game-form {
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: .75rem;
+  padding: 1rem clamp(1rem, 3vw, 1.5rem);
+}
+main > ul { list-style: none; padding-block: .25rem; }
+main > ul > li { padding-block: .85rem; color: #52617a; }
+main > ul > li + li { border-top: 1px solid var(--edge); }
+li > a { font-weight: 650; }
+dt { font-size: .9rem; color: #52617a; }
+dd { margin: .15rem 0 0; font-weight: 600; }
+dd + dt { margin-top: .85rem; }
+
+.account { margin-bottom: 1.5rem; }
+.account form, .game-form fieldset { max-width: 24rem; }
+.game-form fieldset { min-width: 0; margin: 0; border: 0; padding: 0; }
+.game-form h2 { margin-top: 0; }
+label { display: grid; gap: .3rem; margin: .85rem 0; font-weight: 600; }
+input, button { font: inherit; color: inherit; border-radius: .4rem; }
+input {
+  width: 100%;
+  min-width: 0;
+  padding: .5rem .65rem;
+  border: 1px solid #8996ac;
+  background: var(--paper);
+}
+button {
+  padding: .4rem .8rem;
+  margin: .15rem .2rem .15rem 0;
+  border: 1px solid #8996ac;
+  background: var(--paper);
+  cursor: pointer;
+}
+form button:not([type="button"]) {
+  color: var(--paper);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+button:enabled:hover { box-shadow: inset 0 0 0 1px currentColor; }
+button:disabled { opacity: .55; cursor: default; }
+form small, [role="alert"] { color: #9c2233; }
+form small:empty { display: none; }
+
+main > .catalog-list { padding: 0; }
+.catalog-list > li { padding: 0; }
+.catalog-list a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) .5rem;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem clamp(1rem, 3vw, 1.5rem);
+  color: var(--ink);
+  text-decoration: none;
+}
+.catalog-list li:first-child a { border-radius: .7rem .7rem 0 0; }
+.catalog-list li:last-child a { border-bottom-left-radius: .7rem; border-bottom-right-radius: .7rem; }
+.catalog-list a:is(:hover, :focus-visible) { background: #edf2fc; }
+.catalog-list a:is(:hover, :focus-visible) .game-title { color: var(--accent); text-decoration: underline; }
+.game-platform { color: #52617a; font-size: .9rem; font-weight: 450; }
+.row-chevron {
+  width: .45rem;
+  height: .45rem;
+  border: solid var(--accent);
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+}
+.account button[aria-expanded="true"] { color: var(--accent); border-color: currentColor; background: #edf2fc; }
+@media (max-width: 35rem) {
+  .catalog-list a { grid-template-columns: minmax(0, 1fr) .5rem; gap: .15rem 1rem; }
+  .game-platform { grid-column: 1; }
+  .row-chevron { grid-column: 2; grid-row: 1 / 3; }
+}

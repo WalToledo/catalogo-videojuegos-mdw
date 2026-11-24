@@ -4,6 +4,8 @@ import { Admin, type Game } from './Admin'
 
 type View = { list: Game[] } | { game: Game } | { message: string }
 
+const releaseFormat = new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeZone: 'UTC' })
+
 export default function App() {
   if (/^\/admin\/?$/.test(window.location.pathname)) {
     return <main><Account /><a href="/">← Volver al catálogo</a><h1>Administrar catálogo</h1><Admin /></main>
@@ -46,11 +48,17 @@ function Catalog() {
     <h1>{'game' in view ? view.game.title : 'Catálogo de videojuegos'}</h1>
     {'message' in view && <p role="status">{view.message}</p>}
     {'list' in view && (view.list.length
-      ? <ul>{view.list.map(game => <li key={game.id}><a href={`/juegos/${game.id}`}>{game.title}</a> · {game.platform}</li>)}</ul>
+      ? <ul className="catalog-list">{view.list.map(game => <li key={game.id}>
+        <a href={`/juegos/${game.id}`}>
+          <span className="game-title">{game.title}</span>
+          <span className="game-platform">{game.platform}</span>
+          <span className="row-chevron" aria-hidden="true" />
+        </a>
+      </li>)}</ul>
       : <p>Todavía no hay juegos en el catálogo.</p>)}
     {'game' in view && <dl>
       <dt>Plataforma</dt><dd>{view.game.platform}</dd>
-      <dt>Fecha de lanzamiento</dt><dd><time dateTime={view.game.releaseDate}>{view.game.releaseDate}</time></dd>
+      <dt>Fecha de lanzamiento</dt><dd><time dateTime={view.game.releaseDate}>{Number.isFinite(Date.parse(view.game.releaseDate)) ? releaseFormat.format(Date.parse(view.game.releaseDate)) : view.game.releaseDate}</time></dd>
       <dt>Máximo de jugadores</dt><dd>{view.game.maxPlayers}</dd>
     </dl>}
   </main>
