@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { auth } from './auth'
+import { Roles } from './Roles'
 
 const schema = z.object({
   title: z.string().trim().min(1, 'Ingresá un título.'),
@@ -19,7 +20,7 @@ export function Admin() {
   if (error) return <p role="alert">No pudimos verificar tus permisos.</p>
   if (!data) return <p>Iniciá sesión con una cuenta administradora para acceder.</p>
   if (data.user.role !== 'admin') return <p>No tenés permisos para administrar el catálogo.</p>
-  return <Panel key={data.user.id} />
+  return <div key={data.user.id}><Panel /><Roles self={data.user.id} /></div>
 }
 
 function Panel() {
